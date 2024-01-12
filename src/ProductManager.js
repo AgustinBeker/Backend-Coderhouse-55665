@@ -1,6 +1,6 @@
-const fs = require("fs");
+import fs from "fs";
 
-class ProductManager {
+export default class ProductManager {
     constructor(file) {
     this.file = file + ".JSON";
     this.products = [];
@@ -14,7 +14,6 @@ class ProductManager {
         if (data) {
             this.products = JSON.parse(data);
             console.log(this.products);
-          // Validar que todos los campos sean obligatorios
             if (
             !product.title ||
             !product.description ||
@@ -26,13 +25,10 @@ class ProductManager {
             console.log("Error: Todos los campos son obligatorios");
             return;
             }
-
-          // Validar que no se repita el campo "code"
             if (this.products.find((p) => p.code === product.code)) {
             console.log("Error: El código ya existe");
             return;
             }
-          // Agregar el producto con un id autoincrementable
             product.id = this.nextId++;
             this.products.push(product);
             await fs.promises.writeFile(
@@ -138,7 +134,7 @@ class ProductManager {
         throw new Error("Error: ", error);
     }
     }
-  async removeAllProducts() {
+async removeAllProducts() {
     try {
         if (fs.existsSync(this.file)) {
         const data = await fs.promises.readFile(this.file, "utf-8");
@@ -160,4 +156,4 @@ class ProductManager {
 }
 
 
-const manager = new ProductManager("Beker");
+const manager = new ProductManager("Productos");
