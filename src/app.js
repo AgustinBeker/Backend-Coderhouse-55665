@@ -1,11 +1,17 @@
 import express from "express";
 import http from "http";
-import ProductManager from "../src/ProductManager.js";
+import productRouter from "../src/routes/productRoutes.js";
+import cartRouter from "../src/routes/cartRoutes.js";
 
 const app = express();
-const managers = new ProductManager(`../src/Productos`);
 
-let products = await managers.getProducts();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/products", productRouter);
+app.use("/api/carts", cartRouter);
+
+app.listen(8080, () => console.log("Servidor encendido"));
 
 app.get("/products", (req, res) => {
     let query = req.query;

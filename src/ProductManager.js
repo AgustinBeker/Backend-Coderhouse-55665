@@ -4,7 +4,6 @@ export default class ProductManager {
     constructor(file) {
     this.file = file + ".JSON";
     this.products = [];
-    this.nextId = 1;
     }
 
     async addProduct(product) {
@@ -22,27 +21,21 @@ export default class ProductManager {
             !product.code ||
             !product.stock
             ) {
-            console.log("Error: Todos los campos son obligatorios");
-            return;
+            return { error: "Los atributos ingresados no son correctos" };
             }
             if (this.products.find((p) => p.code === product.code)) {
-            console.log("Error: El código ya existe");
-            return;
+            return { error: "el codigo ya existe" };
             }
-            product.id = this.nextId++;
+            product.id = Date.now();
             this.products.push(product);
             await fs.promises.writeFile(
             this.file,
             JSON.stringify(this.products, null, "\t")
             );
         }
-        console.log("Producto agregado correctamente");
+        return { status: 200, message: "Producto añadido exitosamente" };
         } else {
-        product.id = this.nextId++;
-        await fs.promises.writeFile(
-            this.file,
-            JSON.stringify([product], null, "\t")
-        );
+        return { error: "Base de datos no encontrada" };
         }
     } catch (error) {
         console.log("Error: ", error);
@@ -74,7 +67,10 @@ export default class ProductManager {
             if (product) {
             return product;
             } else {
-            console.log(`Error: Producto con el id "${id}" no encontrado`);
+                return {
+                    status: 404,
+                    message: `Error: Producto con el id "${id}" no encontrado`,
+                };
             }
         }
         } else {
@@ -91,18 +87,22 @@ export default class ProductManager {
         if (data) {
             this.products = JSON.parse(data);
             const index = this.products.findIndex((p) => p.id === id);
+
             if (index !== -1) {
-            this.products[index] = { ...this.products[index], ...product };
-            await fs.promises.writeFile(
-                this.file,
-                JSON.stringify(this.products, null, "\t")
-            );
-            console.log("Has actualizado correctamente el producto");
+                this.products[index] = { ...this.products[index], ...product };
+                await fs.promises.writeFile(
+                    this.file,
+                    JSON.stringify(this.products, null, "\t")
+                );
+                return {
+                    status: 200,
+                    message: "Has actualizado correctamente el producto",
+                };
             } else {
-            console.log("Producto no encontrado");
+                return { status: 404, error: "Producto no encontrado" };
             }
         } else {
-            console.log("No existe el archivo, por favor cree uno");
+            return { error: "base de datos no encontrada" };
         }
         }
     } catch (error) {
@@ -122,13 +122,19 @@ export default class ProductManager {
                 this.file,
                 JSON.stringify(this.products, null, "\t")
             );
-            console.log("Producto eliminado correctamente");
+            return {
+                status: 200,
+                message: "Su producto de elimino correctamente",
+            };
             }
         } else {
-            console.log("Producto no encontrado");
+            return { status: 404, message: "Producto no encontrado" };
         }
         } else {
-        console.log("No existe el archivo, por favor cree uno");
+            return {
+                status: 404,
+                message: "Archivo no encontrado, por favor cree uno",
+            };
         }
     } catch (error) {
         throw new Error("Error: ", error);
